@@ -15,10 +15,11 @@ if not os.path.isfile("customer_token.txt"):
 with open("customer_token.txt", "r") as f:
     access_token = f.read().strip()
 
+
 # Set the API endpoint and authentication headers
 customer_url = 'https://api.fortnox.se/3/customers'
 
-wb = openpyxl.load_workbook('test2.xlsx')
+wb = openpyxl.load_workbook('test.xlsx')
 ws = wb.active
 
 headers = {
@@ -34,6 +35,9 @@ email_column_index = None
 address_column_index = None
 zipcode_column_index = None
 city_column_index = None
+org_personnummer_index = None
+formname_index = None
+customer_phone_index = None
 
 for i, cell in enumerate(ws[1]):
     if cell.value == "Namn":
@@ -46,6 +50,12 @@ for i, cell in enumerate(ws[1]):
         zipcode_column_index = i + 1
     elif cell.value == "Stad":
         city_column_index = i + 1
+    elif cell.value == "Personummer":
+        org_personnummer_index = i + 1
+    elif cell.value == "formname":
+        formname_index = i + 1
+    elif cell.value == "Telefonummer":
+        customer_phone_index = i + 1
 
 # Set the query parameter to search for the customer by the name
 if namn_column_index is not None:
@@ -91,6 +101,26 @@ for row in ws.iter_rows(min_row=2, values_only=True):
         else:
             city = None
 
+        # Define Costumer Number
+        if org_personnummer_index is not None:
+            org_personnummer = row[org_personnummer_index-1]
+        else:
+            org_personnummer = None
+
+        # Define Costumer Phone
+        if customer_phone_index is not None:
+            customer_phone = row[customer_phone_index-1]
+        else:
+            customer_phone = None
+
+        # Define formname
+        if formname_index is not None:
+            formname = row[formname_index-1]
+            filename = f"{formname}.txt"
+        else:
+            formname = None
+
+
         # Define customer_data
         customer_data = {
             'Customer': {
@@ -98,7 +128,8 @@ for row in ws.iter_rows(min_row=2, values_only=True):
                 'Email': email,
                 'Address1': address,
                 'ZipCode': zipcode,
-                'City': city
+                'City': city,
+                'OrganisationNumber': org_personnummer
             }
         }
 
@@ -122,7 +153,11 @@ for row in ws.iter_rows(min_row=2, values_only=True):
             # If the customer exists, use the existing customer number
             if response_data['MetaInformation']['@TotalResources'] > 0:
                 customer_number = response_data['Customers'][0]['CustomerNumber']
-                print(f'Customer {row[namn_column_index-1]} already exists!')
+                print(f'Customer {row[namn_column_index-1]} already exists! Customer number is: {customer_number}')
+                with open(filename, "a") as f:
+                    f.write(f"Name: {row[namn_column_index-1]}, ")
+                    f.write(f"Phone number: {customer_phone}, ")
+                    f.write(f"Customer number: {customer_number}\n")
             # If the customer does not exist, create a new customer
             else:
                 # Send a POST request to the Fortnox API to create a new customer
@@ -134,6 +169,11 @@ for row in ws.iter_rows(min_row=2, values_only=True):
 
                 # Check the response status code and print the response content
                 if response.status_code == 200 or response.status_code == 201:
-                    print(f'Customer {row[namn_column_index-1]} assignment successful!')
+                    print(f'Customer {row[namn_column_index-1]} assignment successful! Customer number is: {customer_number})')
+
+                    with open(filename, "w") as f:
+                        f.write(f"Name: {row[namn_column_index-1]}, ")
+                        f.write(f"Phone number: {customer_phone}, ")
+                        f.write(f"Customer number: {customer_number}\n")
                 else:
                     print(f'Error: {response.content}')
