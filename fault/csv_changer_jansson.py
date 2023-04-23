@@ -20,12 +20,13 @@ for csv_file in csv_files:
 
     # Combine app_service columns
     app_service_cols = [col for col in df.columns if 'app_service' in col]
-    df['app_service'] = df[app_service_cols].apply(lambda x: ' & '.join(x.drop_duplicates().astype(str)), axis=1)
+    df['app_service'] = df[app_service_cols].apply(lambda x: ' & '.join([val for val in x.drop_duplicates().astype(str) if val != 'nan']), axis=1)
+
 
     # Count number of 'godkänt' values and create new column 'days hire'
     app_status_cols = [col for col in df.columns if 'app_status' in col]
     godkant_count = df[app_status_cols].apply(lambda x: x.str.contains('Godkänd').sum(), axis=1)
-    df['days hire'] = godkant_count
+    df['days_hire'] = godkant_count
 
     # Remove individual app_service columns
     df.drop(columns=app_service_cols, inplace=True)

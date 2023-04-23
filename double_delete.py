@@ -13,6 +13,7 @@ for filename in os.listdir(cwd):
 
         # Remove duplicate lines
         unique_lines = list(set(lines))
+        print("Lines removed ")
 
         # Write the unique lines back to the file
         with open(filename, 'w') as f:

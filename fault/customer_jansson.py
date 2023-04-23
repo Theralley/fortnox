@@ -19,8 +19,16 @@ with open("customer_token.txt", "r") as f:
 # Set the API endpoint and authentication headers
 customer_url = 'https://api.fortnox.se/3/customers'
 
-wb = openpyxl.load_workbook('test.xlsx')
-ws = wb.active
+directory = os.getcwd()
+
+# Find all xlsx files in the directory containing "jansson" in the file name
+xlsx_files = [f for f in os.listdir(directory) if f.endswith('.xlsx') and 'janssons_kranar_03_15_23' in f]
+
+# Loop through xlsx files and load the workbook
+for xlsx_file in xlsx_files:
+    wb = openpyxl.load_workbook(xlsx_file)
+    ws = wb.active
+    # Rest of your code for processing the workbook goes her
 
 headers = {
     'Authorization': f'Bearer {access_token}',
