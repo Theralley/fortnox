@@ -4,6 +4,33 @@ import webbrowser
 import time
 from urllib.parse import urlparse, parse_qs
 
+
+def refresh_access_token(refresh_token):
+    token_url = "https://api.fortnox.se/oauth-v1/token"
+
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic {}'.format(base64.b64encode('{}:{}'.format(client_id, client_secret).encode()).decode())
+    }
+
+    body = {
+        'grant_type': 'refresh_token',
+        'client_id': client_id,
+        'refresh_token': refresh_token
+    }
+
+    token_response = requests.post(token_url, headers=headers, data=body)
+
+    if token_response.status_code == 200:
+        token_data = token_response.json()
+        new_access_token = token_data['access_token']
+        new_refresh_token = token_data['refresh_token']
+        return new_access_token, new_refresh_token
+    else:
+        print("Error refreshing access token.")
+        return None, None
+
+
 # Set up authentication
 client_secret = "4V9XMejsDe"
 client_id = "MYslrKdiUz4o"
@@ -32,8 +59,6 @@ redirect_url = input("Enter the URL you were redirected to: ")
 query_params = parse_qs(urlparse(redirect_url).query)
 auth_code = query_params["code"][0]
 
-auth_code = query_params["code"][0]
-
 token_url = "https://api.fortnox.se/oauth-v1/token"
 redirect_uri = "https://mysite.org/activation"
 
@@ -60,7 +85,11 @@ access_token = token_data['access_token']
 refresh_token = token_data['refresh_token']
 expires_in = token_data['expires_in']
 
-# Save the access token to a file
+# Save the access token and refresh token to a file
 with open('customer_token.txt', 'w') as f:
     f.write(access_token)
     print("Customer-token successfully printed.")
+
+with open('customer_refresh_token.txt', 'w') as f:
+    f.write(refresh_token)
+    print("Refresh-token successfully printed.")

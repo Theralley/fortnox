@@ -1,0 +1,9 @@
+id,description,isActive,salesPrice,purchasePrice,isStock,stock,stockWarning,stockPlace
+8,"Kranar",1,,0,0,0,,""
+7,"Teleporter",1,,0,0,0,,""
+6,"Larvbandslift",1,,0,0,0,,""
+5,"Slapvagnsburen Skylift",1,,0,0,0,,""
+4,"Billift",1,,0,0,0,,""
+3,"Bomlift",1,,0,0,0,,""
+2,"Saxlift",1,,0,0,0,,""
+1,"Easymarine",1,,0,0,0,,""

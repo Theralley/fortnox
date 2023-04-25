@@ -12,6 +12,11 @@ for csv_file in csv_files:
     # Read the csv file with the correct encoding
     df = pd.read_csv(csv_file, encoding='ISO-8859-1')
 
+    # Rename "phone" or "Phone" columns to "Telefonnummer"
+    df.rename(columns={'phone': 'Telefonummer', 'Phone': 'Telefonummer'}, inplace=True)
+    df.rename(columns={'Ny kund hos easymarine & Janssons mobilkranar?': 'Är du tidigare kund hos oss?'}, inplace=True)
+    df.rename(columns={'Email': 'email'}, inplace=True)
+
     # Get the name of the csv file without the extension
     file_name = os.path.splitext(csv_file)[0]
 

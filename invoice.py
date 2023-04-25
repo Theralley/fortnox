@@ -49,7 +49,7 @@ customer_headers = {
 }
 
 # Load the workbook
-wb = openpyxl.load_workbook('test.xlsx')
+wb = openpyxl.load_workbook('downloaded_attachments/test.xlsx')
 ws = wb.active
 
 # Find the column indices for the required columns
@@ -174,5 +174,5 @@ for row in ws.iter_rows(min_row=2, values_only=True):
         # Save the updated Excel sheet
         wb.save('test.xlsx')
 
-    #else:
-        #print(f'Error: {response.content}')
+    else:
+        print(f'Error: {response.content}')
