@@ -2,6 +2,7 @@ import requests
 import json
 import openpyxl
 import os
+import subprocess
 
 # Set up authentication
 client_secret = "4V9XMejsDe"
@@ -178,3 +179,5 @@ for row in ws.iter_rows(min_row=2, values_only=True):
                         f.write(f"Customer number: {customer_number}\n")
                 else:
                     print(f'Error: {response.content}')
+                    
+os.system("python double_delete.py")
