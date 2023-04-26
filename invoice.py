@@ -2,6 +2,9 @@ import requests
 import json
 import openpyxl
 import os
+import shutil
+import glob
+
 
 # Set up authentication for invoice API
 invoice_client_secret = "4V9XMejsDe"
@@ -35,11 +38,20 @@ with open("Janssons kranar.txt", "r") as f:
         customer_number = customer_number.split(': ')[1]
         customers[f"{name}_{phone}"] = customer_number
 
-print(customers)  # Print the customers dictionary to check if it's populated correctly
+#print(customers)  # Print the customers dictionary to check if it's populated correctly
 
-# Load the workbook
-wb = openpyxl.load_workbook("test.xlsx")
-ws = wb.active
+xlsx_file = "merged_janssons_kranar.xlsx"
+
+# Check if there are any .xlsx files in the directory
+xlsx_files = glob.glob(xlsx_file)
+
+if not xlsx_files:
+    print("All invoices done, for now.")
+    exit()
+else:
+    # Load the workbook
+    wb = openpyxl.load_workbook(xlsx_file)
+    ws = wb.active
 
 # Find the column indices for the required columns
 article_number_index = None
@@ -60,7 +72,7 @@ for i, cell in enumerate(ws[1]):
         customer_phone_index = i + 1
     elif cell.value == "Unit":
         unit_index = i + 1
-    elif cell.value == "app_quantity_1":
+    elif cell.value == "days_summarized":
         delivered_quantity_index = i + 1
     elif cell.value == "final_price":
         price_index = i + 1
@@ -80,16 +92,26 @@ if None in [article_number_index, customer_name_index, customer_phone_index, uni
 customer_orders = {}
 
 # Iterate through the rows and populate the customer_orders dictionary
-for row in ws.iter_rows(min_row=2, values_only=True):
+for row_number, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
     customer_name = str(row[customer_name_index - 1]).strip()
     customer_phone = str(row[customer_phone_index - 1]).strip()
+
+    if customer_name == "None":
+        # Look up the customer name using the phone number from the .txt file
+        for key, value in customers.items():
+            name, phone = key.split("_")
+            if phone == customer_phone:
+                customer_name = name
+                break
+
     customer_key = f"{customer_name}_{customer_phone}"
 
     #article_number = row[article_number_index - 1]
     article_number = 1
     #unit = row[unit_index - 1]
     unit = unit_index
-    delivered_quantity = row[delivered_quantity_index - 1]
+    #delivered_quantity = row[delivered_quantity_index - 1]
+    delivered_quantity = 1
     price = row[price_index - 1]
     description = row[description_index - 1]
 
@@ -122,14 +144,13 @@ with open("Janssons kranar.txt", "r") as file:
         key = f"{name}_{phone}"
         customer_data[key] = customer_number
 
-# Create the invoices
-for customer_key, customer_info in customer_orders.items():
+def create_invoice(customer_key, customer_info):
     customer_name, customer_phone = customer_key.split("_")
     customer_number = customer_data.get(customer_key)
 
     if not customer_number:
         print(f"Error: Customer {customer_name} with phone number {customer_phone} not found in the text file")
-        continue
+        return
 
     # Create an invoice with the customer number and order data
     invoice_data = {
@@ -144,6 +165,27 @@ for customer_key, customer_info in customer_orders.items():
     if response.status_code == 201:
         invoice_number = response.json()["Invoice"]["DocumentNumber"]
         print(f"Created invoice {invoice_number} for customer {customer_name} with phone number {customer_phone}")
+    elif response.status_code == 401:  # Unauthorized
+        print("Access token expired. Refreshing the access token...")
+        os.system("python invoice_token.py")
+        with open("invoice_token.txt", "r") as f:
+            invoice_access_token = f.read().strip()
+        invoice_headers['Authorization'] = f'Bearer {invoice_access_token}'
+        create_invoice(customer_key, customer_info)  # Retry creating the invoice after refreshing the access token
     else:
         print(f"Error: {response.content}")
         print(order)
+
+# Create the invoices
+for customer_key, customer_info in customer_orders.items():
+    create_invoice(customer_key, customer_info)
+
+# Move the used .xlsx file to the "invoice_done" folder
+source = xlsx_file
+destination_folder = "invoice_done"
+
+if not os.path.exists(destination_folder):
+    os.makedirs(destination_folder)
+
+destination = os.path.join(destination_folder, source)
+shutil.move(source, destination)

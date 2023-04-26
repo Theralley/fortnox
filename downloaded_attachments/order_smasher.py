@@ -1,6 +1,8 @@
 import openpyxl
 from collections import Counter
 from openpyxl.styles import Font
+import os
+import shutil
 
 def xlsx_checker(file_name):
     # Load the workbook and select the first sheet
@@ -33,6 +35,10 @@ def xlsx_checker(file_name):
     ws.cell(row=1, column=ws.max_column + 1).value = "Description"
     ws.cell(row=1, column=ws.max_column).font = bold_font
 
+    # Add "days_summarized" column
+    ws.cell(row=1, column=ws.max_column + 1).value = "days_summarized"
+    ws.cell(row=1, column=ws.max_column).font = bold_font
+
     # Iterate through rows and summarize the app_service_* columns
     for row in range(2, ws.max_row + 1):
         summary = []
@@ -46,17 +52,32 @@ def xlsx_checker(file_name):
 
         # Add the count to the corresponding row in the correct column and prepare the description
         description_items = []
+        days_sum = 0
         for key, value in count_summary.items():
             ws.cell(row=row, column=column_mapping[key]).value = value
             description_items.append(f"{key} {value} dagar")
+            days_sum += value
 
         # Set the description in the "Description" column
-        ws.cell(row=row, column=ws.max_column).value = ', '.join(description_items)
+        ws.cell(row=row, column=ws.max_column - 1).value = ', '.join(description_items)
+
+        # Set the sum of rented days in the "days_summarized" column
+        ws.cell(row=row, column=ws.max_column).value = days_sum
 
     # Save the modified workbook to the same file
     wb.save(file_name)
 
-# Replace this with your xlsx file path
-file_name = "test.xlsx"
+# Use the current working directory
+folder_path = os.getcwd()
 
-xlsx_checker(file_name)
+# Iterate through all files in the folder
+for file in os.listdir(folder_path):
+    # Check if the file has a .xlsx extension
+    if file.endswith("merged_janssons_kranar.xlsx"):
+        file_path = os.path.join(folder_path, file)
+        xlsx_checker(file_path)
+
+        # Move the processed file up one folder
+        parent_folder = os.path.dirname(folder_path)
+        new_file_path = os.path.join(parent_folder, file)
+        shutil.move(file_path, new_file_path)
