@@ -1,6 +1,4 @@
-Name: Rasmus, Phone number: 735619573, Customer number: 11
-Name: Sigrud Hansson, Phone number: 735698547, Customer number: 13
-Name: Felix Johansson , Phone number: 704217794, Customer number: 15
-Name: Hansson svensson, Phone number: 754894856, Customer number: 14
-Name: Kevin, Phone number: 737649553, Customer number: 12
-Name: Felix Hansson, Phone number: 704217795, Customer number: 16
+Name: Hansson svensson, Email: rasmus_hamren@msn.com, Phone number: 0754894856, Customer number: 19
+Name: Felix Johansson , Email: Felix.sv.johansson@gmail.com, Phone number: 0704217794, Customer number: 20
+Name: Rasmus, Email: rasmus_hamren@msn.com, Phone number: 0735619573, Customer number: 17
+Name: Sigrud Hansson, Email: harald_Svensson@gmail.com, Phone number: 0735698547, Customer number: 18

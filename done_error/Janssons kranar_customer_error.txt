@@ -1,0 +1,9 @@
+Customer: None
+Phone: 735619573
+Email: rasmus_hamren@msn.com
+Error: Customer not found in the text file
+
+Customer: None
+Phone: 735619574
+Email: rasmus.hamren@gmail.com
+Error: Customer not found in the text file

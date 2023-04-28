@@ -20,7 +20,9 @@ with open("customer_token.txt", "r") as f:
 # Set the API endpoint and authentication headers
 customer_url = 'https://api.fortnox.se/3/customers'
 
-wb = openpyxl.load_workbook('test.xlsx')
+xlsx_file = "merged_janssons_kranar.xlsx"
+
+wb = openpyxl.load_workbook(xlsx_file)
 ws = wb.active
 
 headers = {
@@ -43,7 +45,7 @@ customer_phone_index = None
 for i, cell in enumerate(ws[1]):
     if cell.value == "Namn":
         namn_column_index = i + 1
-    elif cell.value == "Email":
+    elif cell.value == "email" or cell.value == "Email":
         email_column_index = i + 1
     elif cell.value == "Adress":
         address_column_index = i + 1
@@ -81,6 +83,7 @@ for row in ws.iter_rows(min_row=2, values_only=True):
         # Define email
         if email_column_index is not None:
             email = row[email_column_index-1]
+            #print(f"Email: {email}")  # Print the email value for debugging
         else:
             email = None
 
@@ -110,7 +113,10 @@ for row in ws.iter_rows(min_row=2, values_only=True):
 
         # Define Costumer Phone
         if customer_phone_index is not None:
-            customer_phone = row[customer_phone_index-1]
+            customer_phone = str(row[customer_phone_index-1])  # Convert phone number to a string
+            # Check if phone number starts with "0", if not, add it
+            if not customer_phone.startswith("0"):
+                customer_phone = "0" + customer_phone
         else:
             customer_phone = None
 
@@ -158,11 +164,13 @@ for row in ws.iter_rows(min_row=2, values_only=True):
                 print(f'Customer {row[namn_column_index-1]} already exists! Customer number is: {customer_number}')
                 with open(filename, "a") as f:
                     f.write(f"Name: {row[namn_column_index-1]}, ")
+                    f.write(f"Email: {email}, ")  # Include email in the .txt file
                     f.write(f"Phone number: {customer_phone}, ")
                     f.write(f"Customer number: {customer_number}\n")
             # If the customer does not exist, create a new customer
             else:
                 # Send a POST request to the Fortnox API to create a new customer
+                #print(f"Customer data: {json.dumps(customer_data, indent=2)}")  # Print the customer_data JSON for debugging
                 response = requests.post(customer_url, headers=headers, json=customer_data)
                 # Parse the JSON response data
                 response_data = response.json()
@@ -175,6 +183,7 @@ for row in ws.iter_rows(min_row=2, values_only=True):
 
                     with open(filename, "w") as f:
                         f.write(f"Name: {row[namn_column_index-1]}, ")
+                        f.write(f"Email: {email}, ")  # Include email in the .txt file
                         f.write(f"Phone number: {customer_phone}, ")
                         f.write(f"Customer number: {customer_number}\n")
                 else:
